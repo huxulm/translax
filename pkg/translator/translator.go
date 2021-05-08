@@ -25,7 +25,7 @@ const (
 	EngineGoogle = EngineName("google")
 )
 
-var langMap = map[string]string{
+var LangMap = map[string]string{
 	"af":  "af",
 	"sq":  "sq",
 	"am":  "am",
@@ -261,8 +261,8 @@ func (b *basicTranslator) get(url string) (resp *http.Response, err error) {
 }
 
 func (b *basicTranslator) keepLang(srcLang, targetLang string) (sl, tl string, err error) {
-	if sl, okSl := langMap[strings.ToLower(srcLang)]; okSl {
-		if tl, okTl := langMap[strings.ToLower(targetLang)]; okTl {
+	if sl, okSl := LangMap[strings.ToLower(srcLang)]; okSl {
+		if tl, okTl := LangMap[strings.ToLower(targetLang)]; okTl {
 			if b.Engine() == EngineBing {
 				if sl == "zh" {
 					sl = "zh-Hans"
@@ -303,18 +303,18 @@ func init() {
 	defaultCache.Load()
 }
 
-func Trans(engine, from, to, text string) (string, error) {
+func Trans(engine EngineName, from, to, text string) (string, error) {
 	switch engine {
-	case string(EngineGoogle):
+	case EngineGoogle:
 		r, err := ENGINES[EngineGoogle].Translate(from, to, text)
 		return fmt.Sprintf("%v", r), err
-	case string(EngineBing):
+	case EngineBing:
 		r, err := ENGINES[EngineBing].Translate(from, to, text)
 		return fmt.Sprintf("%v", r), err
-	case string(EngineSougou):
+	case EngineSougou:
 		r, err := ENGINES[EngineSougou].Translate(from, to, text)
 		return fmt.Sprintf("%v", r), err
 	default:
-		return "", nil
+		return "", errors.New("engine not selected.")
 	}
 }

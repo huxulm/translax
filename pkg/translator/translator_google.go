@@ -40,17 +40,25 @@ func (gr *GoogleResult) Data() []interface{} {
 	return nil
 }
 
-func (gr *GoogleResult) String() string {
+func (gr *GoogleResult) String() (res string) {
+	defer func() {
+		if r := recover(); r != nil {
+			res = ""
+		}
+	}()
 	if d, ok := gr.data.([]interface{}); ok {
 		if d1, ok := d[0].([]interface{}); ok {
-			if d2, ok := d1[0].([]interface{}); ok {
-				if d3, ok := d2[0].(string); ok {
-					return d3
+			if len(d1) > 1 {
+				for i := range d1[:len(d1)-1] {
+					if d2, ok := d1[i].([]interface{}); ok {
+						res += d2[0].(string)
+					}
 				}
 			}
+			return
 		}
 	}
-	return ""
+	return
 }
 
 func (g *google) Translate(srcLang, targetLang, text string) (r Result, err error) {
