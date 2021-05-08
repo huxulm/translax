@@ -119,7 +119,7 @@ func getPreviousOption(d prompt.Document) (cmd, option string, found bool) {
 
 func completer(d prompt.Document) []prompt.Suggest {
 	if d.TextBeforeCursor() == "" {
-		return commands
+		return []prompt.Suggest{}
 	}
 
 	args := strings.Split(d.TextBeforeCursor(), " ")

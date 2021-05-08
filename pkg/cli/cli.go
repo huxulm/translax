@@ -8,7 +8,7 @@ import (
 	"github.com/jackdon/translax/pkg/translator"
 )
 
-var eng = flag.String("engine", "google", "engine for translate, available values are google, bing and sougou, default use google.")
+var eng = flag.String("e", "google", "engine for translate, available values are google, bing and sougou, default use google.")
 var from = flag.String("from", "", "source language")
 var to = flag.String("to", "", "target language")
 var text = flag.String("text", "", "text content")
