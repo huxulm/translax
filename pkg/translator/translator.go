@@ -21,6 +21,7 @@ type EngineName string
 const (
 	EngineBaidu  = EngineName("baidu")
 	EngineSougou = EngineName("sougou")
+	EngineYoudao = EngineName("youdao")
 	EngineBing   = EngineName("bing")
 	EngineGoogle = EngineName("google")
 )
@@ -217,12 +218,26 @@ func (b *basicTranslator) Engine() EngineName {
 	return b.engine
 }
 
+func (b *basicTranslator) addHeaders(req *http.Request) {
+	req.Header.Set("User-Agent", b.agent)
+	// Headers for Youdao
+	if b.engine == EngineYoudao {
+		req.Header.Set("Host", "fanyi.youdao.com")
+		req.Header.Set("Origin", "https://fanyi.youdao.com")
+		req.Header.Set("Sec-Fetch-Dest", "empty")
+		req.Header.Set("Sec-Fetch-Mode", "cors")
+		req.Header.Set("Sec-Fetch-Site", "same-origin")
+		req.Header.Set("Sec-GPC", "1")
+		req.Header.Set("Referer", "https://fanyi.youdao.com/")
+	}
+}
+
 func (b *basicTranslator) postForm(url string, data url.Values) (resp *http.Response, err error) {
 	var req *http.Request
 	if req, err = http.NewRequest("POST", url, strings.NewReader(data.Encode())); err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8;")
 	s, err := b.cache.GetSession(b.Engine())
 	if err != nil {
 		return
@@ -230,7 +245,7 @@ func (b *basicTranslator) postForm(url string, data url.Values) (resp *http.Resp
 	for _, c := range s.Cookies {
 		req.Header.Add("Cookie", c.Raw)
 	}
-	req.Header.Set("User-Agent", b.agent)
+	b.addHeaders(req)
 	return http.DefaultClient.Do(req)
 }
 
@@ -271,7 +286,7 @@ func (b *basicTranslator) keepLang(srcLang, targetLang string) (sl, tl string, e
 					tl = "zh-Hans"
 				}
 			}
-			if b.Engine() == EngineSougou {
+			if b.Engine() == EngineSougou || b.Engine() == EngineYoudao {
 				if sl == "zh" {
 					sl = "zh-CHS"
 				}
@@ -299,6 +314,7 @@ func init() {
 	RegisterTranslator(NewSougou(defaultCache))
 	RegisterTranslator(NewBing(defaultCache))
 	RegisterTranslator(NewGoogle(defaultCache))
+	RegisterTranslator(NewYoudao(defaultCache))
 	// after register all translator
 	defaultCache.Load()
 }
@@ -313,6 +329,9 @@ func Trans(engine EngineName, from, to, text string) (string, error) {
 		return fmt.Sprintf("%v", r), err
 	case EngineSougou:
 		r, err := ENGINES[EngineSougou].Translate(from, to, text)
+		return fmt.Sprintf("%v", r), err
+	case EngineYoudao:
+		r, err := ENGINES[EngineYoudao].Translate(from, to, text)
 		return fmt.Sprintf("%v", r), err
 	default:
 		return "", errors.New("engine not selected.")
