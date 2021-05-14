@@ -7,7 +7,7 @@
 1. 可选1（非交互）
 运行时带参数，默认选择非交互式
 ```
-translax [--from=zh] [--to=en]  [--text=我是翻译小能手]
+translax [-from=zh] [-to=en] [-e=google]  [-text=我是翻译小能手]
 ```
 
 2. 可选2（交互）
